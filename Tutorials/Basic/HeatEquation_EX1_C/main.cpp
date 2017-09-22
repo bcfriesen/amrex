@@ -110,6 +110,7 @@ void main_main ()
         flux[dir].define(edge_ba, dm, 1, 0);
     }
 
+    amrex::Print() << "Advancing with separate flux loops ..." << std::endl;
     // What time is it now?  We'll use this to compute total run time.
     Real strt_time = ParallelDescriptor::second();
 
@@ -127,7 +128,7 @@ void main_main ()
         // Write a plotfile of the current data (plot_int was defined in the inputs file)
         if (plot_int > 0 && n%plot_int == 0)
         {
-            const std::string& pltfile = amrex::Concatenate("plt",n,5);
+            const std::string& pltfile = amrex::Concatenate("plt_v1_",n,5);
             WriteSingleLevelPlotfile(pltfile, phi_new, {"phi"}, geom, time, n);
         }
     }
@@ -136,6 +137,46 @@ void main_main ()
     //   over all processors
     Real stop_time = ParallelDescriptor::second() - strt_time;
     const int IOProc = ParallelDescriptor::IOProcessorNumber();
+    ParallelDescriptor::ReduceRealMax(stop_time,IOProc);
+
+    // Tell the I/O Processor to write out the "run time"
+    amrex::Print() << "Run time = " << stop_time << std::endl;
+
+    // Initialize phi_new by calling a Fortran routine.
+    // MFIter = MultiFab Iterator
+    for ( MFIter mfi(phi_new, true); mfi.isValid(); ++mfi )
+    {
+        const Box& bx = mfi.tilebox();
+
+        init_phi(BL_TO_FORTRAN_BOX(bx),
+                 BL_TO_FORTRAN_ANYD(phi_new[mfi]),
+                 geom.CellSize(), geom.ProbLo(), geom.ProbHi());
+    }
+
+    amrex::Print() << "Advancing with a single flux loop ..." << std::endl;
+    strt_time = ParallelDescriptor::second();
+    for (int n = 1; n <= nsteps; ++n)
+    {
+        MultiFab::Copy(phi_old, phi_new, 0, 0, 1, 0);
+
+        // new_phi = old_phi + dt * (something)
+        advance(phi_old, phi_new, flux, dt, geom); 
+        time = time + dt;
+        
+        // Tell the I/O Processor to write out which step we're doing
+        amrex::Print() << "Advanced step " << n << "\n";
+
+        // Write a plotfile of the current data (plot_int was defined in the inputs file)
+        if (plot_int > 0 && n%plot_int == 0)
+        {
+            const std::string& pltfile = amrex::Concatenate("plt_v2_",n,5);
+            WriteSingleLevelPlotfile(pltfile, phi_new, {"phi"}, geom, time, n);
+        }
+    }
+
+    // Call the timer again and compute the maximum difference between the start time and stop time
+    //   over all processors
+    stop_time = ParallelDescriptor::second() - strt_time;
     ParallelDescriptor::ReduceRealMax(stop_time,IOProc);
 
     // Tell the I/O Processor to write out the "run time"
