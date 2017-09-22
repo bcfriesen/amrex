@@ -20,9 +20,6 @@ int main (int argc, char* argv[])
 
 void main_main ()
 {
-    // What time is it now?  We'll use this to compute total run time.
-    Real strt_time = ParallelDescriptor::second();
-
     // AMREX_SPACEDIM: number of dimensions
     int n_cell, max_grid_size, nsteps, plot_int;
     Array<int> is_periodic(AMREX_SPACEDIM,1);  // periodic in all direction by default
@@ -112,6 +109,9 @@ void main_main ()
         edge_ba.surroundingNodes(dir);
         flux[dir].define(edge_ba, dm, 1, 0);
     }
+
+    // What time is it now?  We'll use this to compute total run time.
+    Real strt_time = ParallelDescriptor::second();
 
     for (int n = 1; n <= nsteps; ++n)
     {
