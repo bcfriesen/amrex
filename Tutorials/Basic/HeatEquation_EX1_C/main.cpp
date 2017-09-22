@@ -103,14 +103,6 @@ void main_main ()
     const Real* dx = geom.CellSize();
     Real dt = 0.9*dx[0]*dx[0] / (2.0*AMREX_SPACEDIM);
 
-    // Write a plotfile of the initial data if plot_int > 0 (plot_int was defined in the inputs file)
-    if (plot_int > 0)
-    {
-        int n = 0;
-        const std::string& pltfile = amrex::Concatenate("plt",n,5);
-        WriteSingleLevelPlotfile(pltfile, phi_new, {"phi"}, geom, time, 0);
-    }
-
     // build the flux multifabs
     std::array<MultiFab, AMREX_SPACEDIM> flux;
     for (int dir = 0; dir < AMREX_SPACEDIM; dir++)
