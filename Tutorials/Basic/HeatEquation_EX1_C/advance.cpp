@@ -28,9 +28,9 @@ void advance (MultiFab& old_phi, MultiFab& new_phi,
     // 
 
     // Compute fluxes one grid at a time
-    for ( MFIter mfi(old_phi); mfi.isValid(); ++mfi )
+    for ( MFIter mfi(old_phi, true); mfi.isValid(); ++mfi )
     {
-        const Box& bx = mfi.validbox();
+        const Box& bx = mfi.tilebox();
 
         compute_flux(BL_TO_FORTRAN_BOX(bx),
                      BL_TO_FORTRAN_ANYD(old_phi[mfi]),
@@ -43,9 +43,9 @@ void advance (MultiFab& old_phi, MultiFab& new_phi,
     }
     
     // Advance the solution one grid at a time
-    for ( MFIter mfi(old_phi); mfi.isValid(); ++mfi )
+    for ( MFIter mfi(old_phi, true); mfi.isValid(); ++mfi )
     {
-        const Box& bx = mfi.validbox();
+        const Box& bx = mfi.tilebox();
         
         update_phi(BL_TO_FORTRAN_BOX(bx),
                    BL_TO_FORTRAN_ANYD(old_phi[mfi]),

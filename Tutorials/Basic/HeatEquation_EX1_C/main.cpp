@@ -90,9 +90,9 @@ void main_main ()
 
     // Initialize phi_new by calling a Fortran routine.
     // MFIter = MultiFab Iterator
-    for ( MFIter mfi(phi_new); mfi.isValid(); ++mfi )
+    for ( MFIter mfi(phi_new, true); mfi.isValid(); ++mfi )
     {
-        const Box& bx = mfi.validbox();
+        const Box& bx = mfi.tilebox();
 
         init_phi(BL_TO_FORTRAN_BOX(bx),
                  BL_TO_FORTRAN_ANYD(phi_new[mfi]),
