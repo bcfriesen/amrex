@@ -10,6 +10,9 @@ void main_main ();
 void advance (amrex::MultiFab& old_phi, amrex::MultiFab& new_phi,
 	      std::array<amrex::MultiFab, AMREX_SPACEDIM>& flux,
 	      amrex::Real dt, const amrex::Geometry& geom);
+void advance_2 (amrex::MultiFab& old_phi, amrex::MultiFab& new_phi,
+	      std::array<amrex::MultiFab, AMREX_SPACEDIM>& flux,
+	      amrex::Real dt, const amrex::Geometry& geom);
 
 void fill_physbc (amrex::MultiFab& phi, const amrex::Geometry& geom);
 
