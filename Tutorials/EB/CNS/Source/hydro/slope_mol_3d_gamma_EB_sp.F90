@@ -27,10 +27,19 @@ contains
     real(rt), intent(out) :: dqxal(qpd_lo(1):qpd_hi(1),qpd_lo(2):qpd_hi(2),qpd_lo(3):qpd_hi(3),5)
     integer, intent(in) :: Nebg
     type(eb_bndry_geom),intent(in) :: ebg(Nebg)
+    integer, dimension(Nebg) :: tmpp, tmpm, ebg_i, ebg_j, ebg_k
 
     integer i, j, k, n, L
     real(rt) :: slop, dsgn,dlim,dcen,cinv
     real(rt) :: dlft(ilo1-1:ihi1+1,5), drgt(ilo1-1:ihi1+1,5)
+
+    do L = 1, Nebg
+      tmpm(L) = ebg(L)%nbr(-1,0,0)
+      tmpp(L) = ebg(L)%nbr( 1,0,0)
+      ebg_i(L) = ebg(L)%iv(0)
+      ebg_j(L) = ebg(L)%iv(1)
+      ebg_k(L) = ebg(L)%iv(2)
+    end do
 
     if(plm_iorder.eq.1) then
 
@@ -63,23 +72,14 @@ contains
                 drgt(i,5) = q(i+1,j,k,QW) - q(i,j,k,QW)
              enddo
 
-             ! mask out invalid operations
-             do L = 1,Nebg
-                do i = ilo1-1, ihi1+1
-                   if (i.eq.ebg(L)%iv(0) .and. j.eq.ebg(L)%iv(1) .and. k.eq.ebg(L)%iv(2)) then
-                      dlft(i,1) = dlft(i,1) * ebg(L)%nbr(-1,0,0)
-                      dlft(i,2) = dlft(i,2) * ebg(L)%nbr(-1,0,0)
-                      dlft(i,3) = dlft(i,3) * ebg(L)%nbr(-1,0,0)
-                      dlft(i,4) = dlft(i,4) * ebg(L)%nbr(-1,0,0)
-                      dlft(i,5) = dlft(i,5) * ebg(L)%nbr(-1,0,0)
-                      drgt(i,1) = drgt(i,1) * ebg(L)%nbr( 1,0,0)
-                      drgt(i,2) = drgt(i,2) * ebg(L)%nbr( 1,0,0)
-                      drgt(i,3) = drgt(i,3) * ebg(L)%nbr( 1,0,0)
-                      drgt(i,4) = drgt(i,4) * ebg(L)%nbr( 1,0,0)
-                      drgt(i,5) = drgt(i,5) * ebg(L)%nbr( 1,0,0)
-                   endif
-                enddo
-             enddo
+             do n = 1, 5
+               do L = 1, Nebg
+                 if (j.eq.ebg_j(L) .and. k.eq.ebg_k(L)) then
+                   dlft(ebg_i(L),n) = dlft(ebg_i(L),n) * tmpm(L)
+                   drgt(ebg_i(L),n) = drgt(ebg_i(L),n) * tmpp(L)
+                 end if
+               enddo
+             end do
 
              do n=1,5
                 do i = ilo1-1, ihi1+1
@@ -112,10 +112,19 @@ contains
     real(rt), intent(out) :: dqyal(qpd_lo(1):qpd_hi(1),qpd_lo(2):qpd_hi(2),qpd_lo(3):qpd_hi(3),5)
     integer, intent(in) :: Nebg
     type(eb_bndry_geom),intent(in) :: ebg(Nebg)
+    integer, dimension(Nebg) :: tmpp, tmpm, ebg_i, ebg_j, ebg_k
     
     integer i, j, k, n, L
     real(rt) slop, dsgn,dlim,dcen,cinv
-    real(rt) :: dlft(ilo1:ihi1,5), drgt(ilo1:ihi1,5)
+    real(rt) :: dlft(ilo1-1:ihi1+1,5), drgt(ilo1-1:ihi1+1,5)
+
+    do L = 1, Nebg
+      tmpm(L) = ebg(L)%nbr(0,-1,0)
+      tmpp(L) = ebg(L)%nbr(0, 1,0)
+      ebg_i(L) = ebg(L)%iv(0)
+      ebg_j(L) = ebg(L)%iv(1)
+      ebg_k(L) = ebg(L)%iv(2)
+    end do
     
     if(plm_iorder.eq.1) then
        
@@ -149,22 +158,14 @@ contains
              enddo
 
              ! mask out invalid operations
-             do L = 1,Nebg
-                do i = ilo1, ihi1
-                   if (i.eq.ebg(L)%iv(0) .and. j.eq.ebg(L)%iv(1) .and. k.eq.ebg(L)%iv(2)) then
-                      dlft(i,1) = dlft(i,1) * ebg(L)%nbr(0,-1,0)
-                      dlft(i,2) = dlft(i,2) * ebg(L)%nbr(0,-1,0)
-                      dlft(i,3) = dlft(i,3) * ebg(L)%nbr(0,-1,0)
-                      dlft(i,4) = dlft(i,4) * ebg(L)%nbr(0,-1,0)
-                      dlft(i,5) = dlft(i,5) * ebg(L)%nbr(0,-1,0)
-                      drgt(i,1) = drgt(i,1) * ebg(L)%nbr(0, 1,0)
-                      drgt(i,2) = drgt(i,2) * ebg(L)%nbr(0, 1,0)
-                      drgt(i,3) = drgt(i,3) * ebg(L)%nbr(0, 1,0)
-                      drgt(i,4) = drgt(i,4) * ebg(L)%nbr(0, 1,0)
-                      drgt(i,5) = drgt(i,5) * ebg(L)%nbr(0, 1,0)
-                   endif
-                enddo
-             enddo
+             do n = 1, 5
+               do L = 1, Nebg
+                 if (j.eq.ebg_j(L) .and. k.eq.ebg_k(L)) then
+                   dlft(ebg_i(L),n) = dlft(ebg_i(L),n) * tmpm(L)
+                   drgt(ebg_i(L),n) = drgt(ebg_i(L),n) * tmpp(L)
+                 end if
+               enddo
+             end do
 
              do n=1,5
                 do i = ilo1, ihi1
@@ -196,10 +197,19 @@ contains
     real(rt), intent(out) :: dqzal(qpd_lo(1):qpd_hi(1),qpd_lo(2):qpd_hi(2),qpd_lo(3):qpd_hi(3),5)
     integer, intent(in) :: Nebg
     type(eb_bndry_geom),intent(in) :: ebg(Nebg)
+    integer, dimension(Nebg) :: tmpp, tmpm, ebg_i, ebg_j, ebg_k
     
     integer i, j, k, n, L
     real(rt) slop,dsgn,dlim,dcen,cinv
-    real(rt) :: dlft(ilo1:ihi1,nv), drgt(ilo1:ihi1,nv)
+    real(rt) :: dlft(ilo1-1:ihi1+1,nv), drgt(ilo1-1:ihi1+1,nv)
+
+    do L = 1, Nebg
+      tmpm(L) = ebg(L)%nbr(0,0,-1)
+      tmpp(L) = ebg(L)%nbr(0,0, 1)
+      ebg_i(L) = ebg(L)%iv(0)
+      ebg_j(L) = ebg(L)%iv(1)
+      ebg_k(L) = ebg(L)%iv(2)
+    end do
     
     if(plm_iorder.eq.1) then
        
@@ -232,23 +242,14 @@ contains
                   drgt(i,5) = q(i,j,k+1,QV) - q(i,j,k,QV) 
                enddo
 
-               ! mask out invalid operations
-               do L = 1,Nebg
-                  do i = ilo1, ihi1
-                     if (i.eq.ebg(L)%iv(0) .and. j.eq.ebg(L)%iv(1) .and. k.eq.ebg(L)%iv(2)) then
-                        dlft(i,1) = dlft(i,1) * ebg(L)%nbr(0,0,-1)
-                        dlft(i,2) = dlft(i,2) * ebg(L)%nbr(0,0,-1)
-                        dlft(i,3) = dlft(i,3) * ebg(L)%nbr(0,0,-1)
-                        dlft(i,4) = dlft(i,4) * ebg(L)%nbr(0,0,-1)
-                        dlft(i,5) = dlft(i,5) * ebg(L)%nbr(0,0,-1)
-                        drgt(i,1) = drgt(i,1) * ebg(L)%nbr(0,0, 1)
-                        drgt(i,2) = drgt(i,2) * ebg(L)%nbr(0,0, 1)
-                        drgt(i,3) = drgt(i,3) * ebg(L)%nbr(0,0, 1)
-                        drgt(i,4) = drgt(i,4) * ebg(L)%nbr(0,0, 1)
-                        drgt(i,5) = drgt(i,5) * ebg(L)%nbr(0,0, 1)
-                     endif
-                  enddo
-               enddo
+               do n = 1, 5
+                 do L = 1, Nebg
+                   if (j.eq.ebg_j(L) .and. k.eq.ebg_k(L)) then
+                     dlft(ebg_i(L),n) = dlft(ebg_i(L),n) * tmpm(L)
+                     drgt(ebg_i(L),n) = drgt(ebg_i(L),n) * tmpp(L)
+                   end if
+                 enddo
+               end do
 
                do n=1,5
                   do i = ilo1, ihi1
