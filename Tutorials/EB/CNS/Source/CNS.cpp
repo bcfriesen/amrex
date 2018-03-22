@@ -628,7 +628,7 @@ CNS::initialize_eb_structs()
 {
     BL_PROFILE("CNS::initialize_eb_structs()");
 
-    int nGrowEBstructs = 3;
+    int nGrowEBstructs = NUM_GROW;
 
     MultiFab& S = get_new_data(State_Type);
     EBLevelGrid eblg(grids, dmap, geom.Domain(), nGrowEBstructs);
@@ -706,12 +706,13 @@ CNS::initialize_eb_structs()
     for (MFIter mfi(S, MFItInfo().EnableTiling(hydro_tile_size).SetDynamic(true));
          mfi.isValid(); ++mfi)
     {
-        const Box& bx = mfi.tilebox();
+        const Box& tbx = mfi.tilebox();
         int local_i = mfi.LocalIndex();
         int t_idx = mfi.tileIndex();
 
         // Build vector of cut cells structs that live on this (grown) tile
-        const Box gbox = amrex::grow(bx,S.nGrow());
+        const Box gbox = amrex::grow(tbx,nGrowEBstructs);
+
         for (auto&& ebg : sv_eb_bndry_geom[local_i]) {
             if (gbox.contains(ebg.iv)) {
                 sv_ebg_tiles[local_i][t_idx].push_back(ebg);
