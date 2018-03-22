@@ -1,7 +1,7 @@
 module ebslope_sp_module
 
-  use mempool_module, only : amrex_allocate, amrex_deallocate
   use amrex_fort_module, only : rt=>amrex_real
+  use mempool_module, only : amrex_allocate, amrex_deallocate
   use cns_module, only : qrho,qu,qv,qw,qp,qc,qeint,qtemp,qvar
   use eb_stencil_types_module, only : eb_bndry_geom
 
@@ -27,12 +27,20 @@ contains
     real(rt), intent(out) :: dqxal(qpd_lo(1):qpd_hi(1),qpd_lo(2):qpd_hi(2),qpd_lo(3):qpd_hi(3),5)
     integer, intent(in) :: Nebg
     type(eb_bndry_geom),intent(in) :: ebg(Nebg)
-    real(rt), dimension(Nebg) :: tmpp, tmpm
-    integer, dimension(Nebg) :: ebg_i, ebg_j, ebg_k
+    real(rt), dimension(:), pointer, contiguous :: tmpp, tmpm
+    integer, dimension(:), pointer, contiguous :: ebg_i, ebg_j, ebg_k
 
     integer i, j, k, n, L
     real(rt) :: slop, dsgn,dlim,dcen,cinv
     real(rt) :: dlft(ilo1-1:ihi1+1,5), drgt(ilo1-1:ihi1+1,5)
+
+    if (Nebg.ne.0) then
+       call amrex_allocate(tmpm,1,Nebg)
+       call amrex_allocate(tmpp,1,Nebg)
+       call amrex_allocate(ebg_i,1,Nebg)
+       call amrex_allocate(ebg_j,1,Nebg)
+       call amrex_allocate(ebg_k,1,Nebg)
+    endif
 
     do i = 1, Nebg
       tmpm(L) = ebg(L)%nbr(-1,0,0)
@@ -100,6 +108,14 @@ contains
 
     end if
 
+    if (Nebg.ne.0) then
+       call amrex_deallocate(tmpm)
+       call amrex_deallocate(tmpp)
+       call amrex_deallocate(ebg_i)
+       call amrex_deallocate(ebg_j)
+       call amrex_deallocate(ebg_k)
+    endif
+
   end subroutine ebslopex_sp
 
   subroutine ebslopey_sp(q,qd_lo,qd_hi, &
@@ -113,12 +129,20 @@ contains
     real(rt), intent(out) :: dqyal(qpd_lo(1):qpd_hi(1),qpd_lo(2):qpd_hi(2),qpd_lo(3):qpd_hi(3),5)
     integer, intent(in) :: Nebg
     type(eb_bndry_geom),intent(in) :: ebg(Nebg)
-    real(rt), dimension(Nebg) :: tmpp, tmpm
-    integer, dimension(Nebg) :: ebg_i, ebg_j, ebg_k
+    real(rt), dimension(:), pointer, contiguous :: tmpp, tmpm
+    integer, dimension(:), pointer, contiguous :: ebg_i, ebg_j, ebg_k
     
     integer i, j, k, n, L
     real(rt) slop, dsgn,dlim,dcen,cinv
     real(rt) :: dlft(ilo1:ihi1,5), drgt(ilo1:ihi1,5)
+
+    if (Nebg.ne.0) then
+       call amrex_allocate(tmpm,1,Nebg)
+       call amrex_allocate(tmpp,1,Nebg)
+       call amrex_allocate(ebg_i,1,Nebg)
+       call amrex_allocate(ebg_j,1,Nebg)
+       call amrex_allocate(ebg_k,1,Nebg)
+    endif
 
     do i = 1, Nebg
       tmpm(L) = ebg(L)%nbr(0,-1,0)
@@ -186,6 +210,14 @@ contains
        enddo
     end if
     
+    if (Nebg.ne.0) then
+       call amrex_deallocate(tmpm)
+       call amrex_deallocate(tmpp)
+       call amrex_deallocate(ebg_i)
+       call amrex_deallocate(ebg_j)
+       call amrex_deallocate(ebg_k)
+    endif
+
   end subroutine ebslopey_sp
   
   subroutine ebslopez_sp(q,qd_lo,qd_hi, &
@@ -199,12 +231,20 @@ contains
     real(rt), intent(out) :: dqzal(qpd_lo(1):qpd_hi(1),qpd_lo(2):qpd_hi(2),qpd_lo(3):qpd_hi(3),5)
     integer, intent(in) :: Nebg
     type(eb_bndry_geom),intent(in) :: ebg(Nebg)
-    real(rt), dimension(Nebg) :: tmpp, tmpm
-    integer, dimension(Nebg) :: ebg_i, ebg_j, ebg_k
+    real(rt), dimension(:), pointer, contiguous :: tmpp, tmpm
+    integer, dimension(:), pointer, contiguous :: ebg_i, ebg_j, ebg_k
     
     integer i, j, k, n, L
     real(rt) slop,dsgn,dlim,dcen,cinv
     real(rt) :: dlft(ilo1:ihi1,nv), drgt(ilo1:ihi1,nv)
+
+    if (Nebg.ne.0) then
+       call amrex_allocate(tmpm,1,Nebg)
+       call amrex_allocate(tmpp,1,Nebg)
+       call amrex_allocate(ebg_i,1,Nebg)
+       call amrex_allocate(ebg_j,1,Nebg)
+       call amrex_allocate(ebg_k,1,Nebg)
+    endif
 
     do i = 1, Nebg
       tmpm(L) = ebg(L)%nbr(0,0,-1)
@@ -271,6 +311,14 @@ contains
          enddo
       endif
       
+    if (Nebg.ne.0) then
+       call amrex_deallocate(tmpm)
+       call amrex_deallocate(tmpp)
+       call amrex_deallocate(ebg_i)
+       call amrex_deallocate(ebg_j)
+       call amrex_deallocate(ebg_k)
+    endif
+
     end subroutine ebslopez_sp
 
 end module ebslope_sp_module
