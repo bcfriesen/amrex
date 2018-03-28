@@ -11,7 +11,7 @@ amrex::OMPArena::alloc (std::size_t _sz)
 }
 
 void
-amrex::BArena::free (void* pt)
+amrex::OMPArena::free (void* pt)
 {
   char* ptr=reinterpret_cast<char*>(pt);
   #pragma omp target exit data map(release:ptr[:0])

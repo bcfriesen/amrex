@@ -6,6 +6,7 @@
 #include <AMReX_BaseFab.H>
 #include <AMReX_BArena.H>
 #include <AMReX_CArena.H>
+#include <AMReX_OMPArena.H>
 
 #if !defined(BL_NO_FORT)
 #include <AMReX_BaseFab_f.H>
@@ -35,7 +36,7 @@ BF_init::BF_init ()
     {
         BL_ASSERT(the_arena == 0);
 
-        the_arena = new BArena;
+        the_arena = new OMPArena;
 
 #ifdef _OPENMP
 #pragma omp parallel
