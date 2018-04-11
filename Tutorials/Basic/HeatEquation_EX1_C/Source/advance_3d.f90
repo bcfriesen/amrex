@@ -18,6 +18,7 @@ subroutine compute_flux (lo, hi, domlo, domhi, phi, philo, phihi, &
   integer i,j,k
 
   ! x-fluxes
+  !$omp target teams distribute parallel do simd schedule(static,1) collapse(3)
   do k = lo(3), hi(3)
   do j = lo(2), hi(2)
   do i = lo(1), hi(1)+1
@@ -25,8 +26,10 @@ subroutine compute_flux (lo, hi, domlo, domhi, phi, philo, phihi, &
   end do
   end do
   end do
+  !$omp end target teams distribute parallel do simd
 
   ! y-fluxes
+  !$omp target teams distribute parallel do simd schedule(static,1) collapse(3)
   do k = lo(3), hi(3)
   do j = lo(2), hi(2)+1
   do i = lo(1), hi(1)
@@ -34,8 +37,10 @@ subroutine compute_flux (lo, hi, domlo, domhi, phi, philo, phihi, &
   end do
   end do
   end do
+  !$omp end target teams distribute parallel do simd
 
   ! z-fluxes
+  !$omp target teams distribute parallel do simd schedule(static,1) collapse(3)
   do k = lo(3), hi(3)+1
   do j = lo(2), hi(2)
   do i = lo(1), hi(1)
@@ -43,6 +48,7 @@ subroutine compute_flux (lo, hi, domlo, domhi, phi, philo, phihi, &
   end do
   end do
   end do
+  !$omp end target teams distribute parallel do simd
 
 end subroutine compute_flux
 
@@ -70,6 +76,7 @@ subroutine update_phi (lo, hi, phiold, polo, pohi, phinew, pnlo, pnhi, &
 
   dtdx = dt/dx
 
+  !$omp target teams distribute parallel do simd schedule(static,1) collapse(3)
   do k = lo(3), hi(3)
   do j = lo(2), hi(2)
   do i = lo(1), hi(1)
@@ -82,5 +89,6 @@ subroutine update_phi (lo, hi, phiold, polo, pohi, phinew, pnlo, pnhi, &
   end do
   end do
   end do
+  !$omp end target teams distribute parallel do simd
 
 end subroutine update_phi

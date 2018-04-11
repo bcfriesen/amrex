@@ -89,6 +89,9 @@ void main_main ()
     {
         const Box& bx = mfi.validbox();
 
+        const Real* phi_new_dataPtr = phi_new[mfi].dataPtr();
+        const long sz = phi_new[mfi].size();
+        #pragma omp target data map(tofrom:phi_new_dataPtr[0:sz]) // is this one necessary?
         init_phi(BL_TO_FORTRAN_BOX(bx),
                  BL_TO_FORTRAN_ANYD(phi_new[mfi]),
                  geom.CellSize(), geom.ProbLo(), geom.ProbHi());
@@ -104,6 +107,15 @@ void main_main ()
     // Write a plotfile of the initial data if plot_int > 0 (plot_int was defined in the inputs file)
     if (plot_int > 0)
     {
+        // Copy data back to CPU
+        for ( MFIter mfi(phi_new); mfi.isValid(); ++mfi )
+        {
+            const Box& bx = mfi.validbox();
+
+            const Real* phi_new_dataPtr = phi_new[mfi].dataPtr();
+            const long sz = phi_new[mfi].size();
+            #pragma omp target update from (phi_new_dataPtr[0:sz])
+        }
         int n = 0;
         const std::string& pltfile = amrex::Concatenate("plt",n,5);
         WriteSingleLevelPlotfile(pltfile, phi_new, {"phi"}, geom, time, 0);
@@ -119,7 +131,8 @@ void main_main ()
         flux[dir].define(edge_ba, dm, 1, 0);
     }
 
-    for (int n = 1; n <= nsteps; ++n)
+    int n;
+    for (n = 1; n <= nsteps; ++n)
     {
         MultiFab::Copy(phi_old, phi_new, 0, 0, 1, 0);
 
@@ -130,12 +143,23 @@ void main_main ()
         // Tell the I/O Processor to write out which step we're doing
         amrex::Print() << "Advanced step " << n << "\n";
 
-        // Write a plotfile of the current data (plot_int was defined in the inputs file)
-        if (plot_int > 0 && n%plot_int == 0)
-        {
-            const std::string& pltfile = amrex::Concatenate("plt",n,5);
-            WriteSingleLevelPlotfile(pltfile, phi_new, {"phi"}, geom, time, n);
-        }
+    }
+
+    // Copy data back to CPU
+    for ( MFIter mfi(phi_new); mfi.isValid(); ++mfi )
+    {
+        const Box& bx = mfi.validbox();
+
+        const Real* phi_new_dataPtr = phi_new[mfi].dataPtr();
+        const long sz = phi_new[mfi].size();
+        #pragma omp target update from (phi_new_dataPtr[0:sz])
+    }
+
+    // Write a plotfile of the current data (plot_int was defined in the inputs file)
+    if (plot_int > 0 && (n-1)%plot_int == 0)
+    {
+        const std::string& pltfile = amrex::Concatenate("plt",n,5);
+        WriteSingleLevelPlotfile(pltfile, phi_new, {"phi"}, geom, time, n);
     }
 
     // Call the timer again and compute the maximum difference between the start time and stop time

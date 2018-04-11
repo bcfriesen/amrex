@@ -31,6 +31,10 @@ void advance (MultiFab& phi_old,
     {
         const Box& bx = mfi.validbox();
 
+        const Real* phi_old_dataPtr = phi_old[mfi].dataPtr();
+        const long sz = phi_old[mfi].size();
+        #pragma omp target data map(tofrom:phi_old_dataPtr[0:sz])
+
         compute_flux(BL_TO_FORTRAN_BOX(bx),
                      BL_TO_FORTRAN_BOX(domain_bx),
                      BL_TO_FORTRAN_ANYD(phi_old[mfi]),
@@ -46,6 +50,10 @@ void advance (MultiFab& phi_old,
     for ( MFIter mfi(phi_old); mfi.isValid(); ++mfi )
     {
         const Box& bx = mfi.validbox();
+
+        const Real* phi_old_dataPtr = phi_old[mfi].dataPtr();
+        const long sz = phi_old[mfi].size();
+        #pragma omp target data map(tofrom:phi_old_dataPtr[0:sz])
         
         update_phi(BL_TO_FORTRAN_BOX(bx),
                    BL_TO_FORTRAN_ANYD(phi_old[mfi]),
